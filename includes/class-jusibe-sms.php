@@ -2,12 +2,6 @@
 
 class Jusibe_WC_SMS{
 
-	private $api_key;
-
-	private $api_token;
-
-	private $api_url = 'https://jusibe.com/smsapi';
-
 	public function __construct(){
 
 		$this->add_order_status_hooks();
@@ -58,7 +52,7 @@ class Jusibe_WC_SMS{
 		}
 	}
 
-	public function send_automated_customer_notification( $order_id) {
+	public function send_automated_customer_notification( $order_id ) {
 
 		$order = wc_get_order( $order_id );
 		$order_status = $order->get_status();
@@ -81,10 +75,10 @@ class Jusibe_WC_SMS{
 
 	public function send_sms( $to, $message, $customer_notification = false, $order_id = '' ){
 
-		$this->api_key 		= get_option( 'wc_jusibe_api_key', true );
-		$this->api_token 	= get_option( 'wc_jusibe_api_token', true );
+		$api_key 	= get_option( 'wc_jusibe_api_key', true );
+		$api_token 	= get_option( 'wc_jusibe_api_token', true );
 
-		if( empty ( $this->api_key ) || empty( $this->api_token ) ){
+		if( empty ( $api_key ) || empty( $api_token ) ){
 			return;
 		}
 
@@ -99,7 +93,7 @@ class Jusibe_WC_SMS{
 		);
 
 		$headers = array(
-			'Authorization' => 'Basic ' . base64_encode( $this->api_key . ':' . $this->api_token )
+			'Authorization' => 'Basic ' . base64_encode( $api_key . ':' . $api_token )
 		);
 
 		$args = array(
@@ -108,29 +102,35 @@ class Jusibe_WC_SMS{
 			'timeout'	=> 60
 		);
 
-		$url = $this->api_url( 'send_sms' );
+		$url = 'http://localhost/sms/smsapi/send_sms/';
 
 		$response = wp_remote_post( $url, $args );
 
-        $error = false;
+		if( ! is_wp_error( $response ) && 200 == wp_remote_retrieve_response_code( $response ) ) {
+			$error = false;
 
-        if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) != 200 ){
-			$error = true;
-        }
+			$sent_timestamp = time();
 
-		$sent_timestamp =  time();
-
-		if ( $customer_notification ) {
-			$order = wc_get_order( $order_id );
-			$order->add_order_note( $this->format_order_note( $to, $sent_timestamp, $message, $status, $error ) );
+			if ( $customer_notification ) {
+				$order = wc_get_order( $order_id );
+				$order->add_order_note( $this->format_order_note( $to, $sent_timestamp, $message, $status, $error ) );
+			}
 		}
+		else{
+			$error = true;
+		}
+
+		return json_decode( wp_remote_retrieve_body( $response ) );
+
 	}
 
-	private function replace_message_variables( $message, $order_id ) {
+	public function replace_message_variables( $message, $order_id ) {
 
 		$order = wc_get_order( $order_id );
 
 		$replacements = array(
+			'%first_name%'    	=> $order->billing_first_name,
+			'%last_name%'    	=> $order->billing_last_name,
 			'%shop_name%'    	=> get_bloginfo( 'name' ),
 			'%order_id%'     	=> $order->get_order_number(),
 			'%order_amount%' 	=> $order->get_total(),

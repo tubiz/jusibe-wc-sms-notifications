@@ -14,7 +14,7 @@ class Jusibe_WC_SMS_Admin{
 
 		add_action( 'wp_ajax_wc_jusibe_sms_send_order_sms', array( $this, 'send_order_sms' ) );
 
-		add_action( 'admin_bar_menu', array( $this, 'show_jusibe_sms_credits' ), 100 );
+		//add_action( 'admin_bar_menu', array( $this, 'show_jusibe_sms_credits' ), 100 );
 	}
 
 	public function add_settings_tab( $settings_tabs ) {
@@ -369,7 +369,7 @@ class Jusibe_WC_SMS_Admin{
 
 		add_meta_box(
 			'wc_jusibe_send_sms_meta_box',
-			'Send SMS Message Jusibe',
+			'Jusibe: Send SMS To Customer',
 		 	array( $this, 'display_send_sms_meta_box' ),
 			'shop_order',
 			'side',
@@ -404,7 +404,7 @@ class Jusibe_WC_SMS_Admin{
 
 				if ( $section.is( ".processing" ) ) return false;
 
-				$section.addClass( "processing" ).block( { message: null, overlayCSS: { background: "#fff url( '<?php echo esc_url( WC()->plugin_url() . '/assets/images/ajax-loader@2x.gif' ); ?>' ) no-repeat center", backgroundSize: "16px 16px", opacity: 0.6 } } );
+				$section.addClass( "processing" ).block( { message: null, overlayCSS: { background: "#fff", backgroundSize: "16px 16px", opacity: 0.6 } } );
 
 				var data = {
 					action:    "wc_jusibe_sms_send_order_sms",
@@ -422,8 +422,7 @@ class Jusibe_WC_SMS_Admin{
 						$section.removeClass( "processing" ).unblock();
 
 						if ( response ) {
-
-							$section.block( { message: response, timeout: 900 } );
+							$section.block( { message: response, timeout: 2000 } );
 							$message.val( '' );
 						}
 					},
@@ -462,9 +461,16 @@ class Jusibe_WC_SMS_Admin{
 
 		$jusibe_wc_sms = new Jusibe_WC_SMS();
 
-		$jusibe_wc_sms->send_sms( $phone, $message, true, $order_id );
+		$message = $jusibe_wc_sms->replace_message_variables( $message, $order_id );
 
-		exit( 'Message Sent' );
+		$send_sms = $jusibe_wc_sms->send_sms( $phone, $message, true, $order_id );
+
+		if( isset( $send_sms->status ) && ( 'Sent' == $send_sms->status ) ) {
+			exit( 'Message Sent' );
+		}
+		else{
+			exit( 'Message Not Sent ' );
+		}
 	}
 
 	public function show_jusibe_sms_credits( $wp_admin_bar ) {
