@@ -10,11 +10,17 @@ class Jusibe_WC_SMS_Admin{
 
 		add_action( 'woocommerce_update_options_jusibe_sms', array( $this, 'update_jusibe_sms_settings' ) );
 
+		add_action( 'woocommerce_admin_field_wc_jusibe_sms_link', array( $this, 'add_link_field' ) );
+
 		add_action( 'add_meta_boxes', array( $this, 'add_send_sms_meta_box' ) );
+
+		add_action( 'wp_ajax_wc_jusibe_sms_send_test_sms', array( $this, 'send_test_sms' ) );
 
 		add_action( 'wp_ajax_wc_jusibe_sms_send_order_sms', array( $this, 'send_order_sms' ) );
 
-		//add_action( 'admin_bar_menu', array( $this, 'show_jusibe_sms_credits' ), 100 );
+		add_action( 'admin_bar_menu', array( $this, 'show_jusibe_sms_credits' ), 100 );
+
+		add_filter( 'plugin_action_links', array( $this, 'plugin_action_links' ), 10, 2 );
 	}
 
 	public function add_settings_tab( $settings_tabs ) {
@@ -38,6 +44,14 @@ class Jusibe_WC_SMS_Admin{
 
 		ob_start(); ?>
 			jQuery( document ).ready( function(){
+				if ( $('#wc_jusibe_enable_admin_sms').is(':checked') == true ) {
+					$( "#wc_jusibe_admin_sms" ).closest( "tr" ).show();
+					$( "#wc_jusibe_admin_mobile" ).closest( "tr" ).show();
+				}
+				else{
+					$( "#wc_jusibe_admin_sms" ).closest( "tr" ).hide();
+					$( "#wc_jusibe_admin_mobile" ).closest( "tr" ).hide();
+				}
 				if ( $('#wc_jusibe_order_pending').is(':checked') == true ) {
 					$( "#wc_jusibe_pending_sms" ).closest( "tr" ).show();
 				}
@@ -81,6 +95,15 @@ class Jusibe_WC_SMS_Admin{
 					$( "#wc_jusibe_failed_sms" ).closest( "tr" ).hide();
 				}
 
+				$( '#wc_jusibe_enable_admin_sms' ).change(function(){
+					if( $(this).prop("checked") ) {
+						$( "#wc_jusibe_admin_sms" ).closest( "tr" ).show();
+						$( "#wc_jusibe_admin_mobile" ).closest( "tr" ).show();;
+					} else {
+						$( "#wc_jusibe_admin_sms" ).closest( "tr" ).hide();
+						$( "#wc_jusibe_admin_mobile" ).closest( "tr" ).hide();
+					}
+				});
 				$( '#wc_jusibe_order_pending' ).change(function(){
 					if( $(this).prop("checked") ) {
 						$( "#wc_jusibe_pending_sms" ).closest( "tr" ).show();
@@ -137,6 +160,57 @@ class Jusibe_WC_SMS_Admin{
 						$( "#wc_jusibe_failed_sms" ).closest( "tr" ).hide();
 					}
 				});
+
+				// handle SMS test send
+				$('a.<?php echo 'wc_send_sms_test_sms_button'; ?>').on('click', function () {
+
+					var number  = $('input#<?php echo 'wc_jusibe_sms_test_mobile_number'; ?>');
+					var message = $('textarea#<?php echo 'wc_jusibe_sms_test_message'; ?>');
+
+					// make sure values are not empty
+					if ( ( !number.val() ) || ( !number.val() ) ) {
+						alert("Please make sure you have entered a mobile phone number and test message.");
+						return false;
+					}
+
+					// block UI
+					number.closest('table').addClass( "processing" ).block( { message: null, overlayCSS: { background: "#fff", backgroundSize: "16px 16px", opacity: 0.6 } } );
+
+					var data = {
+						action			: 'wc_jusibe_sms_send_test_sms',
+						mobile_number	: number.val(),
+						message			: message.val(),
+						security		: '<?php echo wp_create_nonce( 'wc_jusibe_sms_send_test_sms' ); ?>',
+
+					};
+
+					$.ajax(	{
+						type:     "POST",
+						url:      ajaxurl,
+						data:     data,
+						success:  function( response ) {
+
+							if ( response ) {
+
+								// unblock UI
+								number.closest('table').unblock();
+
+								// clear posted values
+								number.val('');
+								message.val('');
+
+								// Display Success or Failure message from response
+								alert(response);
+
+							}
+						},
+						dataType: "html"
+					} );
+
+					return false;
+
+				});
+
 			});
 
 		<?php
@@ -356,9 +430,54 @@ class Jusibe_WC_SMS_Admin{
 
 			array( 'type' => 'sectionend' ),
 
+			array(
+				'name' => 'Send Test SMS',
+				'type' => 'title'
+			),
+
+			array(
+				'id'       => 'wc_jusibe_sms_test_mobile_number',
+				'name'     => 'Mobile Number',
+				'desc_tip' => 'Enter the mobile number you are test SMS will be sent to',
+				'type'     => 'text'
+			),
+
+			array(
+				'id'       => 'wc_jusibe_sms_test_message',
+				'name'     => 'Message',
+				'desc_tip' => 'Enter the test message to be sent. Remember that SMS messages are limited to 160 characters.',
+				'type'     => 'textarea',
+				'css'      => 'min-width: 500px;'
+			),
+
+			array(
+				'name'  => 'Send SMS',
+				'href'  => '#',
+				'class' => 'wc_send_sms_test_sms_button' . ' button',
+				'type'  => 'wc_jusibe_sms_link'
+			),
+
+			array( 'type' => 'sectionend' )
+
 	    );
 
 	    return apply_filters( 'jusibe_api_details_settings', $settings );
+	}
+
+	public function add_link_field( $field ) {
+
+		if ( isset( $field['name'] ) && isset( $field['class'] ) && isset( $field['href'] ) ) :
+
+		?>
+			<tr valign="top">
+				<th scope="row" class="titledesc"></th>
+				<td class="forminp">
+					<a href="<?php echo esc_url( $field['href'] ); ?>" class="<?php echo esc_attr( $field['class'] ); ?>"><?php echo wp_filter_kses( $field['name'] ); ?></a>
+				</td>
+			</tr>
+		<?php
+
+		endif;
 	}
 
 	public function update_jusibe_sms_settings() {
@@ -413,11 +532,11 @@ class Jusibe_WC_SMS_Admin{
 					message:   $message.val()
 				};
 
-				$.ajax( {
-						type:     "POST",
-						url:      ajaxurl,
-						data:     data,
-						success:  function( response ) {
+				$.ajax(	{
+					type:     "POST",
+					url:      ajaxurl,
+					data:     data,
+					success:  function( response ) {
 
 						$section.removeClass( "processing" ).unblock();
 
@@ -433,6 +552,31 @@ class Jusibe_WC_SMS_Admin{
 		<?php
 
 		wc_enqueue_js( ob_get_clean() );
+	}
+
+	public function send_test_sms() {
+
+		if( ! is_admin() || ! current_user_can( 'edit_posts' ) ) {
+			wp_die( 'You do not have sufficient permissions to access this page.' );
+		}
+
+		if( ! wp_verify_nonce( $_POST['security'], 'wc_jusibe_sms_send_test_sms' ) ) {
+			wp_die( 'You have taken too long, please go back and try again.' );
+		}
+
+		$message = sanitize_text_field( $_POST[ 'message' ] );
+		$phone = sanitize_text_field( $_POST[ 'mobile_number' ] );
+
+		$jusibe_wc_sms = new Jusibe_WC_SMS();
+
+		$send_sms = $jusibe_wc_sms->send_sms( $phone, $message );
+
+		if( isset( $send_sms->status ) && ( 'Sent' == $send_sms->status ) ) {
+			exit( 'Message Sent' );
+		}
+		else{
+			exit( 'Message Not Sent ' );
+		}
 	}
 
 	public function send_order_sms() {
@@ -456,8 +600,6 @@ class Jusibe_WC_SMS_Admin{
 		$order = wc_get_order( $order_id );
 
 		$phone = $order->billing_phone;
-
-		require_once JUSIBE_WC_SMS_DIR . '/includes/class-jusibe-sms.php';
 
 		$jusibe_wc_sms = new Jusibe_WC_SMS();
 
@@ -534,6 +676,20 @@ class Jusibe_WC_SMS_Admin{
 			$wp_admin_bar->add_menu( $sms_usage_item_args );
 			$wp_admin_bar->add_menu( $add_funds_item_args );
 		}
+	}
+
+	public function plugin_action_links( $links, $file ) {
+	    static $this_plugin;
+
+	    if( ! $this_plugin ) {
+	        $this_plugin = JUSIBE_WC_SMS_BASENAME;
+	    }
+
+	    if( $file == $this_plugin ) {
+	        $settings_link = '<a href="' . get_bloginfo('wpurl') . '/wp-admin/admin.php?page=wc-settings&tab=jusibe_sms">Settings</a>';
+	        array_unshift( $links, $settings_link );
+	    }
+	    return $links;
 	}
 
 }
