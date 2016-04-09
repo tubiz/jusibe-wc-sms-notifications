@@ -2,9 +2,14 @@
 
 class Jusibe_WC_SMS{
 
+	private $api_url;
+
 	public function __construct(){
 
+		$this->api_url = 'https://jusibe.com/smsapi/send_sms/';
+
 		$this->add_order_status_hooks();
+
 	}
 
 	private function add_order_status_hooks() {
@@ -55,6 +60,7 @@ class Jusibe_WC_SMS{
 	public function send_automated_customer_notification( $order_id ) {
 
 		$order = wc_get_order( $order_id );
+
 		$order_status = $order->get_status();
 
 		if ( 'yes' == get_option( 'wc_jusibe_order_' . $order_status ) ) {
@@ -86,6 +92,8 @@ class Jusibe_WC_SMS{
 
 		$status  	= 'Sent';
 
+		$message    = sanitize_text_field( $message );
+
 		$body = array(
 			'to'		=> $to,
 			'from'		=> $sender_id,
@@ -102,16 +110,14 @@ class Jusibe_WC_SMS{
 			'timeout'	=> 60
 		);
 
-		$url = 'http://localhost/sms/smsapi/send_sms/';
-
-		$response = wp_remote_post( $url, $args );
+		$response = wp_remote_post( $this->api_url, $args );
 
 		if( ! is_wp_error( $response ) && 200 == wp_remote_retrieve_response_code( $response ) ) {
 			$error = false;
 
 			$sent_timestamp = time();
 
-			if ( $customer_notification ) {
+			if ( $customer_notification && ! empty( $order_id ) ) {
 				$order = wc_get_order( $order_id );
 				$order->add_order_note( $this->format_order_note( $to, $sent_timestamp, $message, $status, $error ) );
 			}
