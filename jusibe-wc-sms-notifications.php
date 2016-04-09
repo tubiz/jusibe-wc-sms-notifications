@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WooCommerce - Jusibe SMS Notifications
+ * Plugin Name: Jusibe SMS Notifications for WooCommerce
  * Plugin URI: http://bosun.me/jusibe-woocommerce-order-sms-notifications/
  * Description: Send SMS order notifications to admins and customers from your WooCommerce store. Powered by Jusibe.com
  * Author: Tunbosun Ayinla
