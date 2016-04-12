@@ -155,6 +155,10 @@ This allow you to send a Test SMS.
 
 ## Screenshots ##
 
-1. WooCommerce - Jusibe SMS Notifications settings page
+###1. WooCommerce - Jusibe SMS Notifications settings page
+###
+![Screenshot 1](https://dl.dropboxusercontent.com/u/28591673/jusibe-wc-sms-notifications/screenshot-1.png)
 
-2. Send SMS metabox on the WooCommerce Order page
+###2. Send SMS metabox on the WooCommerce Order page
+###
+![Screenshot 2](https://dl.dropboxusercontent.com/u/28591673/jusibe-wc-sms-notifications/screenshot-2.png)
