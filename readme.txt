@@ -1,10 +1,10 @@
 === Jusibe SMS Notifications for WooCommerce ===
 Contributors: tubiz
-Donate link: http://bosun.me/donate
+Donate link: https://bosun.me/donate
 Tags: woocommerce, jusibe, sms, sms notifications, tubiz plugins, tubiz, nigeria, order notifications
-Requires at least: 4.1
-Tested up to: 4.5
-Stable tag: 1.0.0
+Requires at least: 4.4
+Tested up to: 4.9
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,13 +25,13 @@ To signup for Jusibe visit our website by clicking [here](https://jusibe.com)
 SMS messages can be sent to the following Nigerian mobile networks
 
 * __glo__
-* __MTN__
+* __mtn__
 * __airtel__
-* __etisalat__
+* __9mobile__
 
 = Note =
 
-SMS messages can only be sent to Nigerian mobile numbers (glo, MTN, airtel & etisalat)
+SMS messages can only be sent to Nigerian mobile numbers (glo, mtn, airtel & 9mobile)
 
 = Plugin Features =
 
@@ -133,7 +133,10 @@ This allow you to send a Test SMS.
 
 == Changelog ==
 
-= 1.0.0 =
+= 1.1.0 - May 13, 2018 =
+*	Fix: Deprecated WooCommerce 2.X functions
+
+= 1.0.0 - April 11, 2016 =
 *   First release
 
 
@@ -142,7 +145,8 @@ This allow you to send a Test SMS.
 
 == Upgrade Notice ==
 
-* No need to upgrade yet
+= 1.1.0 =
+*	Fix: Deprecated WooCommerce 2.X functions
 
 
 == Screenshots ==

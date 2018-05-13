@@ -73,7 +73,7 @@ class Jusibe_WC_SMS{
 
 			$message = $this->replace_message_variables( $message, $order_id );
 
-			$phone = $order->billing_phone;
+			$phone = method_exists( $order, 'get_billing_phone' ) ? $order->get_billing_phone() : $order->billing_phone;
 
 			$this->send_sms( $phone, $message, true, $order_id );
 		}
@@ -92,7 +92,7 @@ class Jusibe_WC_SMS{
 
 		$status  	= 'Sent';
 
-		$message    = sanitize_text_field( $message );
+		$message    = sanitize_textarea_field( $message );
 
 		$body = array(
 			'to'		=> $to,
@@ -134,14 +134,19 @@ class Jusibe_WC_SMS{
 
 		$order = wc_get_order( $order_id );
 
+		$first_name  	= method_exists( $order, 'get_billing_first_name' ) ? $order->get_billing_first_name() : $order->billing_first_name;
+		$last_name  	= method_exists( $order, 'get_billing_last_name' ) ? $order->get_billing_last_name() : $order->billing_last_name;
+
+		$order_currency = method_exists( $order, 'get_currency' ) ? $order->get_currency() : $order->get_order_currency();
+
 		$replacements = array(
-			'%first_name%'    	=> $order->billing_first_name,
-			'%last_name%'    	=> $order->billing_last_name,
-			'%shop_name%'    	=> get_bloginfo( 'name' ),
-			'%order_id%'     	=> $order->get_order_number(),
-			'%order_amount%' 	=> $order->get_total(),
-			'%order_status%' 	=> ucfirst( $order->get_status() ),
-			'%store_currency%'	=> get_woocommerce_currency(),
+			'%first_name%'      => $first_name,
+			'%last_name%'       => $last_name,
+			'%shop_name%'       => get_bloginfo( 'name' ),
+			'%order_id%'        => $order->get_order_number(),
+			'%order_amount%'    => number_format( $order->get_total() ),
+			'%order_status%'    => ucfirst( $order->get_status() ),
+			'%store_currency%'  => $order_currency,
 		);
 
 		return str_replace( array_keys( $replacements ), $replacements, $message );
@@ -164,7 +169,7 @@ class Jusibe_WC_SMS{
 
 		ob_start();
 		?>
-	  	<p><strong>SMS Notification</strong></p>
+		<p><strong>SMS Notification</strong></p>
 		<p><strong>To: </strong><?php echo esc_html( $to ); ?></p>
 		<p><strong>Date Sent: </strong><?php echo esc_html( $formatted_datetime ); ?></p>
 		<p><strong>Message: </strong><?php echo esc_html( $message ); ?></p>

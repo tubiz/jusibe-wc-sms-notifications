@@ -223,7 +223,7 @@ class Jusibe_WC_SMS_Admin{
 	        array(
 	            'title'    	=> 'Jusibe.com API Credentials',
 	            'type'     	=> 'title',
-	            'desc' 		=> 'This section lets you enter your Jusibe API credentials. To get your API credentials login to your account <a href="https://jusibe.com/cp" target="_blank">here</a> and click on the settings menu. If you don\'t an account visit <a href="https://jusibe.com"  target="_blank">Jusibe.com</a> to register and purchase SMS credits. '
+	            'desc' 		=> 'This section lets you enter your Jusibe API credentials. To get your API credentials login to your account <a href="https://dashboard.jusibe.com" target="_blank">here</a> and click on the settings menu. If you don\'t an account visit <a href="https://jusibe.com"  target="_blank">Jusibe.com</a> to register and purchase SMS credits. '
 	        ),
 	        array(
 	            'title' 	=> 'Public Key',
@@ -252,7 +252,7 @@ class Jusibe_WC_SMS_Admin{
 	            'title'    	=> 'Admin SMS Notifications',
 	            'type'     	=> 'title',
 	            'desc' 		=> 'This section lets you enable SMS notifications to admin for new orders & customise the SMS message that is sent to the admin when an order is placed.<br>Use the tags below to customize the message:
-	            	<code>%shop_name%</code>: Shop Name
+	            	<code>%shop_name%</code>: Shop Name (' . get_bloginfo( 'name' ) . ')
 	            	<code>%order_id%</code>: The Order Number
 	            	<code>%order_amount%</code>: The Order Amount
 	            	<code>%store_currency%</code>: The default currency of the store
@@ -356,7 +356,7 @@ class Jusibe_WC_SMS_Admin{
 	            'desc' 		=> 'This section lets you customise the SMS message that is sent to customers when their order status changes.<br>Use the tags below to customize the SMS message:
 	            	<code>%first_name%</code>: Customer\'s First Name
 	            	<code>%last_name%</code>: Customer\'s Last Name
-	            	<code>%shop_name%</code>: Shop Name
+	            	<code>%shop_name%</code>: Shop Name (' . get_bloginfo( 'name' ) . ')
 	            	<code>%order_id%</code>: The Order Number
 	            	<code>%order_amount%</code>: The Order Amount
 	            	<code>%store_currency%</code>: The default currency of the store
@@ -498,11 +498,11 @@ class Jusibe_WC_SMS_Admin{
 		);
 	}
 
-	public function display_send_sms_meta_box(){
+	public function display_send_sms_meta_box( $post ) {
 
-		global $theorder;
+		global $post;
 	?>
-    	<p><textarea type="text" name="wc_jusibe_sms_order_message" id="wc_jusibe_sms_order_message" class="input-text" style="width: 100%;" rows="4" value="<?php echo esc_attr( $default_message ); ?>"></textarea></p>
+    	<p><textarea type="text" name="wc_jusibe_sms_order_message" id="wc_jusibe_sms_order_message" class="input-text" style="width: 100%;" rows="4"></textarea></p>
     	<p><a class="button tips" id="wc_jusibe_sms_order_send_message" data-tip="Send an SMS to the billing phone number for this order.">Send SMS</a>
         <span id="wc_jusibe_sms_order_message_char_count" style="color: green; float: right; font-size: 16px;">0</span></p>
 
@@ -530,7 +530,7 @@ class Jusibe_WC_SMS_Admin{
 				var data = {
 					action:    "wc_jusibe_sms_send_order_sms",
 					security:  "<?php echo wp_create_nonce( 'wc_jusibe_sms_send_order_sms' ); ?>",
-					order_id:  "<?php echo esc_js( $theorder->id ); ?>",
+					order_id:  "<?php echo esc_js( $post->ID ); ?>",
 					message:   $message.val()
 				};
 
@@ -566,8 +566,8 @@ class Jusibe_WC_SMS_Admin{
 			wp_die( 'You have taken too long, please go back and try again.' );
 		}
 
-		$message = sanitize_text_field( $_POST[ 'message' ] );
-		$phone = sanitize_text_field( $_POST[ 'mobile_number' ] );
+		$message = sanitize_textarea_field( $_POST[ 'message' ] );
+		$phone   = sanitize_text_field( $_POST[ 'mobile_number' ] );
 
 		$jusibe_wc_sms = new Jusibe_WC_SMS();
 
@@ -591,7 +591,7 @@ class Jusibe_WC_SMS_Admin{
 			wp_die( 'You have taken too long, please go back and try again.' );
 		}
 
-		$message = sanitize_text_field( $_POST[ 'message' ] );
+		$message = sanitize_textarea_field( $_POST[ 'message' ] );
 
 		$order_id = ( is_numeric( $_POST['order_id'] ) ) ? absint( $_POST['order_id'] ) : null;
 
@@ -601,7 +601,7 @@ class Jusibe_WC_SMS_Admin{
 
 		$order = wc_get_order( $order_id );
 
-		$phone = $order->billing_phone;
+		$phone = method_exists( $order, 'get_billing_phone' ) ? $order->get_billing_phone() : $order->billing_phone;
 
 		$jusibe_wc_sms = new Jusibe_WC_SMS();
 
@@ -673,7 +673,7 @@ class Jusibe_WC_SMS_Admin{
 			$add_funds_item_args = array(
 				'id'     => 'wc_jusibe_sms_add_funds_item',
 				'title'  => 'Buy SMS Credits for Your Jusibe Account',
-				'href'   => 'https://jusibe.com/cp?section=buy-credit',
+				'href'   => 'https://dashboard.jusibe.com/buy-credit',
 				'meta'   => array( 'target' => '_blank' ),
 				'parent' => 'wc_jusibe_sms_admin_bar_menu'
 			);
