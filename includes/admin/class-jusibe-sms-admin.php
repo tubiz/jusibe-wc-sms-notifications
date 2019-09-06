@@ -1,10 +1,16 @@
 <?php
 
-class Jusibe_WC_SMS_Admin{
+/**
+ * Class Jusibe_WC_SMS_Admin
+ */
+class Jusibe_WC_SMS_Admin {
 
-	public function __construct(){
+	/**
+	 * Jusibe_WC_SMS_Admin constructor.
+	 */
+	public function __construct() {
 
-		add_filter( 'woocommerce_settings_tabs_array', array( $this, 'add_settings_tab'  ), 100 );
+		add_filter( 'woocommerce_settings_tabs_array', array( $this, 'add_settings_tab' ), 100 );
 
 		add_action( 'woocommerce_settings_tabs_jusibe_sms', array( $this, 'jusibe_sms_settings_tab' ) );
 
@@ -23,6 +29,13 @@ class Jusibe_WC_SMS_Admin{
 		add_filter( 'plugin_action_links_' . JUSIBE_WC_SMS_BASENAME, array( $this, 'plugin_action_links' ) );
 	}
 
+	/**
+	 * Add Jusibe settings tab.
+	 *
+	 * @param array $settings_tabs.
+	 *
+	 * @return array
+	 */
 	public function add_settings_tab( $settings_tabs ) {
 
 		$jusibe_settings_tab = array();
@@ -31,16 +44,19 @@ class Jusibe_WC_SMS_Admin{
 
 			$jusibe_settings_tab[ $tab_id ] = $tab_title;
 
-			if ( 'email' == $tab_id ) {
-				$jusibe_settings_tab[ 'jusibe_sms' ] = 'Jusibe SMS';
+			if ( 'email' === $tab_id ) {
+				$jusibe_settings_tab['jusibe_sms'] = 'Jusibe SMS';
 			}
 		}
 
 		return $jusibe_settings_tab;
 	}
 
+	/**
+	 * Jusibe settings tab custom script.
+	 */
 	public function jusibe_sms_settings_tab() {
-	    woocommerce_admin_fields( $this->get_jusibe_sms_settings() );
+		woocommerce_admin_fields( $this->get_jusibe_sms_settings() );
 
 		ob_start(); ?>
 			jQuery( document ).ready( function(){
@@ -217,61 +233,70 @@ class Jusibe_WC_SMS_Admin{
 		wc_enqueue_js( ob_get_clean() );
 	}
 
+	/**
+	 * Jusibe WooCommerce settings.
+	 *
+	 * @return mixed|void
+	 */
 	public function get_jusibe_sms_settings() {
 
-	    $settings = array(
-	        array(
-	            'title'    	=> 'Jusibe.com API Credentials',
-	            'type'     	=> 'title',
-	            'desc' 		=> 'This section lets you enter your Jusibe API credentials. To get your API credentials login to your account <a href="https://dashboard.jusibe.com" target="_blank">here</a> and click on the settings menu. If you don\'t an account visit <a href="https://jusibe.com"  target="_blank">Jusibe.com</a> to register and purchase SMS credits. '
-	        ),
-	        array(
-	            'title' 	=> 'Public Key',
-	            'desc' 		=> 'Enter your Jusibe Public key',
-	            'type' 		=> 'text',
-	            'id'   		=> 'wc_jusibe_api_key',
-				'css'   	=> 'width:40%',
-	        ),
-	        array(
-	            'title' 	=> 'Access Token',
-	            'desc' 		=> 'Enter your Jusibe Access token',
-	            'type' 		=> 'text',
-	            'id'   		=> 'wc_jusibe_api_token',
-				'css'   	=> 'width:40%',
-	        ),
-	        array(
-	            'title' 	=> 'Sender ID',
-	            'desc' 		=> 'Enter the sender ID for the SMS. Maximum of eleven (11) characters. Mobile numbers not allowed',
-	            'type' 		=> 'text',
-	            'id'   		=> 'wc_jusibe_sender_id',
-	        ),
+		$settings = array(
+			array(
+				'title' => 'Jusibe.com API Credentials',
+				'type'  => 'title',
+				'desc'  => 'This section lets you enter your Jusibe API credentials. To get your API credentials login to your account <a href="https://dashboard.jusibe.com" target="_blank">here</a> and click on the settings menu. If you don\'t an account visit <a href="https://jusibe.com"  target="_blank">Jusibe.com</a> to register and purchase SMS credits. ',
+			),
+			array(
+				'title' => 'Public Key',
+				'desc'  => 'Enter your Jusibe Public key',
+				'type'  => 'text',
+				'id'    => 'wc_jusibe_api_key',
+				'css'   => 'width:40%',
+			),
+			array(
+				'title' => 'Access Token',
+				'desc'  => 'Enter your Jusibe Access token',
+				'type'  => 'text',
+				'id'    => 'wc_jusibe_api_token',
+				'css'   => 'width:40%',
+			),
+			array(
+				'title' => 'Sender ID',
+				'desc'  => 'Enter the sender ID for the SMS. Maximum of eleven (11) characters. Mobile numbers not allowed',
+				'type'  => 'text',
+				'id'    => 'wc_jusibe_sender_id',
+			),
 
 			array( 'type' => 'sectionend' ),
 
-	        array(
-	            'title'    	=> 'Admin SMS Notifications',
-	            'type'     	=> 'title',
-	            'desc' 		=> 'This section lets you enable SMS notifications to admin for new orders & customise the SMS message that is sent to the admin when an order is placed.<br>Use the tags below to customize the message:
+			array(
+				'title' => 'Admin SMS Notifications',
+				'type'  => 'title',
+				'desc'  => 'This section lets you enable SMS notifications to admin for new orders & customise the SMS message that is sent to the admin when an order is placed.<br>Use the tags below to customize the message:
+	            	<code>%first_name%</code>: Customer\'s First Name
+	            	<code>%last_name%</code>: Customer\'s Last Name
+	            	<code>%phone_number%</code>: Customer\'s Phone Number
 	            	<code>%shop_name%</code>: Shop Name (' . get_bloginfo( 'name' ) . ')
+	            	<code>%shop_url%</code>: Shop URL (' . get_home_url() . ')
 	            	<code>%order_id%</code>: The Order Number
 	            	<code>%order_amount%</code>: The Order Amount
 	            	<code>%store_currency%</code>: The default currency of the store
-	            	<code>%order_status%</code>: The Order Status'
-	        ),
+	            	<code>%order_status%</code>: The Order Status',
+			),
 			array(
 				'id'       => 'wc_jusibe_enable_admin_sms',
-				'name'     => 'Enable Admin New Order SMS Notifcations',
+				'name'     => 'Enable Admin New Order SMS Notifications',
 				'desc_tip' => 'Enable Admin New Order SMS notifications',
 				'default'  => 'no',
-				'type'     => 'checkbox'
+				'type'     => 'checkbox',
 			),
-	        array(
-	            'title' 	=> 'Admin Mobile Number',
-	            'desc' 		=> '<br>Enter the mobile number where new order SMS will be sent to, in the format 080XXXXXXXX. Seperate multiple numbers by commas',
-	            'type' 		=> 'text',
-	            'id'   		=> 'wc_jusibe_admin_mobile',
-				'css'   	=> 'width:40%',
-	        ),
+			array(
+				'title' => 'Admin Mobile Number',
+				'desc'  => '<br>Enter the mobile number where new order SMS will be sent to, in the format 080XXXXXXXX. Seperate multiple numbers by commas',
+				'type'  => 'text',
+				'id'    => 'wc_jusibe_admin_mobile',
+				'css'   => 'width:40%',
+			),
 
 			array(
 				'id'       => 'wc_jusibe_admin_sms',
@@ -279,16 +304,16 @@ class Jusibe_WC_SMS_Admin{
 				'desc_tip' => 'This is the SMS message that is sent to the admin when an order is placed',
 				'css'      => 'min-width:500px;min-height:80px;',
 				'default'  => 'You have a new order #%order_id% on %shop_name% for %store_currency%%order_amount%',
-				'type'     => 'textarea'
+				'type'     => 'textarea',
 			),
 
 			array( 'type' => 'sectionend' ),
 
-	        array(
-	            'title'    	=> 'Customer SMS Notifications',
-	            'type'     	=> 'title',
-	            'desc' 		=> 'This section lets you select the order status changes that will send a SMS notification to customers'
-	        ),
+			array(
+				'title' => 'Customer SMS Notifications',
+				'type'  => 'title',
+				'desc'  => 'This section lets you select the order status changes that will send a SMS notification to customers',
+			),
 
 			array(
 				'name'          => 'Send SMS Notifications for these order statuses:',
@@ -296,7 +321,7 @@ class Jusibe_WC_SMS_Admin{
 				'desc'          => 'Pending',
 				'default'       => 'no',
 				'type'          => 'checkbox',
-				'checkboxgroup' => 'start'
+				'checkboxgroup' => 'start',
 			),
 
 			array(
@@ -304,7 +329,7 @@ class Jusibe_WC_SMS_Admin{
 				'desc'          => 'On-Hold',
 				'default'       => 'no',
 				'type'          => 'checkbox',
-				'checkboxgroup' => ''
+				'checkboxgroup' => '',
 			),
 
 			array(
@@ -312,7 +337,7 @@ class Jusibe_WC_SMS_Admin{
 				'desc'          => 'Processing',
 				'default'       => 'no',
 				'type'          => 'checkbox',
-				'checkboxgroup' => ''
+				'checkboxgroup' => '',
 			),
 
 			array(
@@ -320,7 +345,7 @@ class Jusibe_WC_SMS_Admin{
 				'desc'          => 'Completed',
 				'default'       => 'no',
 				'type'          => 'checkbox',
-				'checkboxgroup' => ''
+				'checkboxgroup' => '',
 			),
 
 			array(
@@ -328,7 +353,7 @@ class Jusibe_WC_SMS_Admin{
 				'desc'          => 'Cancelled',
 				'default'       => 'no',
 				'type'          => 'checkbox',
-				'checkboxgroup' => ''
+				'checkboxgroup' => '',
 			),
 
 			array(
@@ -337,7 +362,7 @@ class Jusibe_WC_SMS_Admin{
 				'std'           => 'yes',
 				'default'       => 'no',
 				'type'          => 'checkbox',
-				'checkboxgroup' => ''
+				'checkboxgroup' => '',
 			),
 
 			array(
@@ -345,87 +370,89 @@ class Jusibe_WC_SMS_Admin{
 				'desc'          => 'Failed',
 				'default'       => 'no',
 				'type'          => 'checkbox',
-				'checkboxgroup' => 'end'
+				'checkboxgroup' => 'end',
 			),
 
 			array( 'type' => 'sectionend' ),
 
-	        array(
-	            'title'    	=> 'Customise SMS Messages',
-	            'type'     	=> 'title',
-	            'desc' 		=> 'This section lets you customise the SMS message that is sent to customers when their order status changes.<br>Use the tags below to customize the SMS message:
+			array(
+				'title' => 'Customise SMS Messages',
+				'type'  => 'title',
+				'desc'  => 'This section lets you customise the SMS message that is sent to customers when their order status changes.<br>Use the tags below to customize the SMS message:
 	            	<code>%first_name%</code>: Customer\'s First Name
 	            	<code>%last_name%</code>: Customer\'s Last Name
+	            	<code>%phone_number%</code>: Customer\'s Phone Number
 	            	<code>%shop_name%</code>: Shop Name (' . get_bloginfo( 'name' ) . ')
+	            	<code>%shop_url%</code>: Shop URL (' . get_home_url() . ')
 	            	<code>%order_id%</code>: The Order Number
 	            	<code>%order_amount%</code>: The Order Amount
 	            	<code>%store_currency%</code>: The default currency of the store
-	            	<code>%order_status%</code>: The Order Status'
-	        ),
-
-			array(
-				'id'       		=> 'wc_jusibe_default_sms',
-				'name'     		=> 'Default Customer SMS Message',
-				'desc_tip' 		=> 'This is the default SMS message that is sent when an order status changes.',
-				'css'      		=> 'min-width:500px;min-height:80px;',
-				'default'  		=> 'Hi %first_name% Thanks for placing an order on %shop_name%. Your order #%order_id% on %shop_name% is now %order_status%.',
-				'type'     		=> 'textarea',
+	            	<code>%order_status%</code>: The Order Status',
 			),
 
 			array(
-				'id'       	=> 'wc_jusibe_pending_sms',
-				'name'     	=> 'Pending SMS Message',
-				'desc_tip' 	=> 'Enter a custom SMS message to be sent when an order status is changed to pending or leave blank to use the default message above.',
-				'css'      	=> 'min-width:500px;min-height:80px;',
-				'type'     	=> 'textarea',
+				'id'       => 'wc_jusibe_default_sms',
+				'name'     => 'Default Customer SMS Message',
+				'desc_tip' => 'This is the default SMS message that is sent when an order status changes.',
+				'css'      => 'min-width:500px;min-height:80px;',
+				'default'  => 'Hi %first_name% Thanks for placing an order on %shop_name%. Your order #%order_id% on %shop_name% is now %order_status%.',
+				'type'     => 'textarea',
 			),
 
 			array(
-				'id'       	=> 'wc_jusibe_on-hold_sms',
-				'name'     	=> 'On-Hold SMS Message',
-				'desc_tip' 	=> 'Enter a custom SMS message to be sent when an order status is changed to on-hold or leave blank to use the default message above.',
-				'css'      	=> 'min-width:500px;min-height:80px;',
-				'type'     	=> 'textarea',
+				'id'       => 'wc_jusibe_pending_sms',
+				'name'     => 'Pending SMS Message',
+				'desc_tip' => 'Enter a custom SMS message to be sent when an order status is changed to pending or leave blank to use the default message above.',
+				'css'      => 'min-width:500px;min-height:80px;',
+				'type'     => 'textarea',
 			),
 
 			array(
-				'id'       	=> 'wc_jusibe_processing_sms',
-				'name'     	=> 'Processing SMS Message',
-				'desc_tip' 	=> 'Enter a custom SMS message to be sent when an order status is changed to processing or leave blank to use the default message above.',
-				'css'      	=> 'min-width:500px;min-height:80px;',
-				'type'     	=> 'textarea',
+				'id'       => 'wc_jusibe_on-hold_sms',
+				'name'     => 'On-Hold SMS Message',
+				'desc_tip' => 'Enter a custom SMS message to be sent when an order status is changed to on-hold or leave blank to use the default message above.',
+				'css'      => 'min-width:500px;min-height:80px;',
+				'type'     => 'textarea',
 			),
 
 			array(
-				'id'       	=> 'wc_jusibe_completed_sms',
-				'name'     	=> 'Completed SMS Message',
-				'desc_tip' 	=> 'Enter a custom SMS message to be sent for completed orders or leave blank to use the default message above.',
-				'css'      	=> 'min-width:500px;min-height:80px;',
-				'type'     	=> 'textarea',
+				'id'       => 'wc_jusibe_processing_sms',
+				'name'     => 'Processing SMS Message',
+				'desc_tip' => 'Enter a custom SMS message to be sent when an order status is changed to processing or leave blank to use the default message above.',
+				'css'      => 'min-width:500px;min-height:80px;',
+				'type'     => 'textarea',
 			),
 
 			array(
-				'id'       	=> 'wc_jusibe_cancelled_sms',
-				'name'     	=> 'Cancelled SMS Message',
-				'desc_tip' 	=> 'Enter a custom SMS message to be sent when an order status is changed to cancelled or leave blank to use the default message above.',
-				'css'      	=> 'min-width:500px;min-height:80px;',
-				'type'     	=> 'textarea',
+				'id'       => 'wc_jusibe_completed_sms',
+				'name'     => 'Completed SMS Message',
+				'desc_tip' => 'Enter a custom SMS message to be sent for completed orders or leave blank to use the default message above.',
+				'css'      => 'min-width:500px;min-height:80px;',
+				'type'     => 'textarea',
 			),
 
 			array(
-				'id'       	=> 'wc_jusibe_refunded_sms',
-				'name'     	=> 'Refunded SMS Message',
-				'desc_tip' 	=> 'Enter a custom SMS message to be sent when an order status is changed to refunded or leave blank to use the default message above.',
-				'css'      	=> 'min-width:500px;min-height:80px;',
-				'type'     	=> 'textarea',
+				'id'       => 'wc_jusibe_cancelled_sms',
+				'name'     => 'Cancelled SMS Message',
+				'desc_tip' => 'Enter a custom SMS message to be sent when an order status is changed to cancelled or leave blank to use the default message above.',
+				'css'      => 'min-width:500px;min-height:80px;',
+				'type'     => 'textarea',
 			),
 
 			array(
-				'id'       	=> 'wc_jusibe_failed_sms',
-				'name'     	=> 'Failed SMS Message',
-				'desc_tip' 	=> 'Enter a custom SMS message to be sent when an order status is changed to failed or leave blank to use the default message above.',
-				'css'      	=> 'min-width:500px;min-height:80px;',
-				'type'     	=> 'textarea',
+				'id'       => 'wc_jusibe_refunded_sms',
+				'name'     => 'Refunded SMS Message',
+				'desc_tip' => 'Enter a custom SMS message to be sent when an order status is changed to refunded or leave blank to use the default message above.',
+				'css'      => 'min-width:500px;min-height:80px;',
+				'type'     => 'textarea',
+			),
+
+			array(
+				'id'       => 'wc_jusibe_failed_sms',
+				'name'     => 'Failed SMS Message',
+				'desc_tip' => 'Enter a custom SMS message to be sent when an order status is changed to failed or leave blank to use the default message above.',
+				'css'      => 'min-width:500px;min-height:80px;',
+				'type'     => 'textarea',
 			),
 
 			array( 'type' => 'sectionend' ),
@@ -433,14 +460,14 @@ class Jusibe_WC_SMS_Admin{
 			array(
 				'name' => 'Send Test SMS',
 				'type' => 'title',
-	            'desc' => 'The Sender ID that will be used is the Sender ID that was set above.'
+				'desc' => 'The Sender ID that will be used is the Sender ID that was set above.',
 			),
 
 			array(
 				'id'       => 'wc_jusibe_sms_test_mobile_number',
 				'name'     => 'Mobile Number',
 				'desc_tip' => 'Enter the mobile number you are test SMS will be sent to',
-				'type'     => 'text'
+				'type'     => 'text',
 			),
 
 			array(
@@ -448,63 +475,79 @@ class Jusibe_WC_SMS_Admin{
 				'name'     => 'Message',
 				'desc_tip' => 'Enter the test message to be sent.',
 				'type'     => 'textarea',
-				'css'      => 'min-width: 500px;'
+				'css'      => 'min-width: 500px;',
 			),
 
 			array(
-				'name'  => 'Send SMS',
-				'href'  => '#',
-				'class' => 'wc_send_sms_test_sms_button' . ' button',
-				'length'=> 160,
-				'type'  => 'wc_jusibe_sms_link'
+				'name'   => 'Send SMS',
+				'href'   => '#',
+				'class'  => 'wc_send_sms_test_sms_button button',
+				'length' => 160,
+				'type'   => 'wc_jusibe_sms_link',
 			),
 
-			array( 'type' => 'sectionend' )
+			array( 'type' => 'sectionend' ),
 
-	    );
+		);
 
-	    return apply_filters( 'jusibe_api_details_settings', $settings );
+		return apply_filters( 'jusibe_api_details_settings', $settings );
 	}
 
+	/**
+	 * Add link field.
+	 *
+	 * @param $field
+	 */
 	public function add_link_field( $field ) {
 
 		if ( isset( $field['name'] ) && isset( $field['class'] ) && isset( $field['href'] ) ) :
 
-		?>
+			?>
 			<tr valign="top">
 				<th scope="row" class="titledesc"></th>
 				<td class="forminp">
 					<a href="<?php echo esc_url( $field['href'] ); ?>" class="<?php echo esc_attr( $field['class'] ); ?>"><?php echo wp_filter_kses( $field['name'] ); ?></a>
 				</td>
 			</tr>
-		<?php
+			<?php
 
 		endif;
 	}
 
+	/**
+	 * Save Jusibe settings.
+	 */
 	public function update_jusibe_sms_settings() {
-	    woocommerce_update_options( $this->get_jusibe_sms_settings() );
+		woocommerce_update_options( $this->get_jusibe_sms_settings() );
 	}
 
-	public function add_send_sms_meta_box(){
+	/**
+	 * Add send message metabox.
+	 */
+	public function add_send_sms_meta_box() {
 
 		add_meta_box(
 			'wc_jusibe_send_sms_meta_box',
 			'Jusibe: Send SMS To Customer',
-		 	array( $this, 'display_send_sms_meta_box' ),
+			array( $this, 'display_send_sms_meta_box' ),
 			'shop_order',
 			'side',
 			'default'
 		);
 	}
 
+	/**
+	 * Display send message metabox.
+	 *
+	 * @param WP_Post $post WP_Post.
+	 */
 	public function display_send_sms_meta_box( $post ) {
 
 		global $post;
-	?>
-    	<p><textarea type="text" name="wc_jusibe_sms_order_message" id="wc_jusibe_sms_order_message" class="input-text" style="width: 100%;" rows="4"></textarea></p>
-    	<p><a class="button tips" id="wc_jusibe_sms_order_send_message" data-tip="Send an SMS to the billing phone number for this order.">Send SMS</a>
-        <span id="wc_jusibe_sms_order_message_char_count" style="color: green; float: right; font-size: 16px;">0</span></p>
+		?>
+		<p><textarea type="text" name="wc_jusibe_sms_order_message" id="wc_jusibe_sms_order_message" class="input-text" style="width: 100%;" rows="4"></textarea></p>
+		<p><a class="button tips" id="wc_jusibe_sms_order_send_message" data-tip="Send an SMS to the billing phone number for this order.">Send SMS</a>
+		<span id="wc_jusibe_sms_order_message_char_count" style="color: green; float: right; font-size: 16px;">0</span></p>
 
 		<?php ob_start(); ?>
 			// character count
@@ -556,42 +599,47 @@ class Jusibe_WC_SMS_Admin{
 		wc_enqueue_js( ob_get_clean() );
 	}
 
+	/**
+	 * Send test message
+	 */
 	public function send_test_sms() {
 
-		if( ! is_admin() || ! current_user_can( 'edit_posts' ) ) {
+		if ( ! is_admin() || ! current_user_can( 'edit_posts' ) ) {
 			wp_die( 'You do not have sufficient permissions to access this page.' );
 		}
 
-		if( ! wp_verify_nonce( $_POST['security'], 'wc_jusibe_sms_send_test_sms' ) ) {
+		if ( ! wp_verify_nonce( $_POST['security'], 'wc_jusibe_sms_send_test_sms' ) ) {
 			wp_die( 'You have taken too long, please go back and try again.' );
 		}
 
-		$message = sanitize_textarea_field( $_POST[ 'message' ] );
-		$phone   = sanitize_text_field( $_POST[ 'mobile_number' ] );
+		$message = sanitize_textarea_field( $_POST['message'] );
+		$phone   = sanitize_text_field( $_POST['mobile_number'] );
 
 		$jusibe_wc_sms = new Jusibe_WC_SMS();
 
 		$send_sms = $jusibe_wc_sms->send_sms( $phone, $message );
 
-		if( isset( $send_sms->status ) && ( 'Sent' == $send_sms->status ) ) {
+		if ( isset( $send_sms->status ) && ( 'Sent' === $send_sms->status ) ) {
 			exit( 'Message Sent' );
-		}
-		else{
+		} else {
 			exit( 'Message Not Sent ' );
 		}
 	}
 
+	/**
+	 * Send message from the order details page.
+	 */
 	public function send_order_sms() {
 
-		if( ! is_admin() || ! current_user_can( 'edit_posts' ) ) {
+		if ( ! is_admin() || ! current_user_can( 'edit_posts' ) ) {
 			wp_die( 'You do not have sufficient permissions to access this page.' );
 		}
 
-		if( ! wp_verify_nonce( $_POST['security'], 'wc_jusibe_sms_send_order_sms' ) ) {
+		if ( ! wp_verify_nonce( $_POST['security'], 'wc_jusibe_sms_send_order_sms' ) ) {
 			wp_die( 'You have taken too long, please go back and try again.' );
 		}
 
-		$message = sanitize_textarea_field( $_POST[ 'message' ] );
+		$message = sanitize_textarea_field( $_POST['message'] );
 
 		$order_id = ( is_numeric( $_POST['order_id'] ) ) ? absint( $_POST['order_id'] ) : null;
 
@@ -609,14 +657,18 @@ class Jusibe_WC_SMS_Admin{
 
 		$send_sms = $jusibe_wc_sms->send_sms( $phone, $message, true, $order_id );
 
-		if( isset( $send_sms->status ) && ( 'Sent' == $send_sms->status ) ) {
+		if ( isset( $send_sms->status ) && ( 'Sent' === $send_sms->status ) ) {
 			exit( 'Message Sent' );
-		}
-		else{
+		} else {
 			exit( 'Message Not Sent ' );
 		}
 	}
 
+	/**
+	 * Display Jusibe credits balance in the admin bar.
+	 *
+	 * @param $wp_admin_bar
+	 */
 	public function show_jusibe_sms_credits( $wp_admin_bar ) {
 
 		if ( ! is_admin_bar_showing() || ! current_user_can( 'manage_woocommerce' ) ) {
@@ -625,49 +677,49 @@ class Jusibe_WC_SMS_Admin{
 
 		if ( false === ( $my_query = get_transient( 'jusibe_available_sms_credits' ) ) ) {
 
-			$api_key 	= get_option( 'wc_jusibe_api_key', true );
-			$api_token 	= get_option( 'wc_jusibe_api_token', true );
+			$api_key   = get_option( 'wc_jusibe_api_key', true );
+			$api_token = get_option( 'wc_jusibe_api_token', true );
 
-			if( empty ( $api_key ) || empty( $api_token ) ){
+			if ( empty( $api_key ) || empty( $api_token ) ) {
 				return;
 			}
 
 			$headers = array(
-				'Authorization' => 'Basic ' . base64_encode( $api_key . ':' . $api_token )
+				'Authorization' => 'Basic ' . base64_encode( $api_key . ':' . $api_token ),
 			);
 
 			$args = array(
-				'headers'	=> $headers,
-				'timeout'	=> 60
+				'headers' => $headers,
+				'timeout' => 60,
 			);
 
 			$url = 'https://jusibe.com/smsapi/get_credits/';
 
 			$response = wp_remote_get( $url, $args );
 
-			if( ! is_wp_error( $response ) && 200 == wp_remote_retrieve_response_code( $response ) ) {
-		        $body = json_decode( wp_remote_retrieve_body( $response ) );
-		    	set_transient( 'jusibe_available_sms_credits', $body->sms_credits, 12 * HOUR_IN_SECONDS );
+			if ( ! is_wp_error( $response ) && 200 === (int) wp_remote_retrieve_response_code( $response ) ) {
+				$body = json_decode( wp_remote_retrieve_body( $response ) );
+				set_transient( 'jusibe_available_sms_credits', $body->sms_credits, 12 * HOUR_IN_SECONDS );
 			}
 		}
 
 		$sms_credits = get_transient( 'jusibe_available_sms_credits' );
 
-		if( $sms_credits ){
+		if ( $sms_credits ) {
 
-			$message = 'You have '. $sms_credits .' SMS credits left';
+			$message = 'You have ' . $sms_credits . ' SMS credits left';
 
 			$menu_args = array(
 				'id'    => 'wc_jusibe_sms_admin_bar_menu',
 				'title' => 'Jusibe SMS Credits: ' . $sms_credits,
-				'href'  => false
+				'href'  => false,
 			);
 
 			$sms_usage_item_args = array(
-				'id' => 'wc_jusibe_sms_sms_usage_item',
-				'title' => $message,
-				'href' => false,
-				'parent' => 'wc_jusibe_sms_admin_bar_menu'
+				'id'     => 'wc_jusibe_sms_sms_usage_item',
+				'title'  => $message,
+				'href'   => false,
+				'parent' => 'wc_jusibe_sms_admin_bar_menu',
 			);
 
 			$add_funds_item_args = array(
@@ -675,7 +727,7 @@ class Jusibe_WC_SMS_Admin{
 				'title'  => 'Buy SMS Credits for Your Jusibe Account',
 				'href'   => 'https://dashboard.jusibe.com/buy-credit',
 				'meta'   => array( 'target' => '_blank' ),
-				'parent' => 'wc_jusibe_sms_admin_bar_menu'
+				'parent' => 'wc_jusibe_sms_admin_bar_menu',
 			);
 
 			$wp_admin_bar->add_menu( $menu_args );
@@ -684,13 +736,20 @@ class Jusibe_WC_SMS_Admin{
 		}
 	}
 
+	/**
+	 * Plugin action links.
+	 *
+	 * @param array $links Action links.
+	 *
+	 * @return array
+	 */
 	public function plugin_action_links( $links ) {
-	    $settings_link = array(
-	    	'settings' => '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=jusibe_sms' ) . '" title="View Jusibe Settings">Settings</a>'
-	    );
-	    return array_merge( $links, $settings_link );
+		$settings_link = array(
+			'settings' => '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=jusibe_sms' ) . '" title="View Jusibe Settings">Settings</a>',
+		);
+		return array_merge( $links, $settings_link );
 	}
 
 }
-new Jusibe_WC_SMS_Admin;
+new Jusibe_WC_SMS_Admin();
 

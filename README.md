@@ -5,11 +5,11 @@
 
 **Tags:** woocommerce, jusibe, sms, sms notifications, tubiz plugins, tubiz, nigeria, order notifications
 
-**Requires at least:** 4.4
+**Requires at least:** 4.7
 
-**Tested up to:** 4.9
+**Tested up to:** 5.2
 
-**Stable tag:** 1.0.0
+**Stable tag:** 1.2.0
 
 **License:** GPLv2 or later
 
@@ -141,6 +141,10 @@ This allow you to send a Test SMS.
 
 ## Changelog ##
 
+### 1.2.0 - September 6, 2019
+*	New: Add new replace variable phone number and shop url
+*   Update: WC 3.7 compatibility.
+
 ### 1.1.0 - May 13, 2018 =
 *	Fix: Deprecated WooCommerce 2.X functions
 
@@ -153,8 +157,8 @@ This allow you to send a Test SMS.
 
 ## Upgrade Notice ##
 
-### 1.1.0 =
-*	Fix: Deprecated WooCommerce 2.X functions
+### 1.2.0 =
+*	New: Add new replace variable phone number and shop url
 
 
 ## Screenshots ##

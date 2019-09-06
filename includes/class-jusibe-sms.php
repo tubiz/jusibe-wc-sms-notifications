@@ -1,10 +1,21 @@
 <?php
 
-class Jusibe_WC_SMS{
+/**
+ * Class Jusibe_WC_SMS
+ */
+class Jusibe_WC_SMS {
 
+	/**
+	 * Jusibe APi URL
+	 *
+	 * @var string
+	 */
 	private $api_url;
 
-	public function __construct(){
+	/**
+	 * Jusibe_WC_SMS constructor.
+	 */
+	public function __construct() {
 
 		$this->api_url = 'https://jusibe.com/smsapi/send_sms/';
 
@@ -12,32 +23,48 @@ class Jusibe_WC_SMS{
 
 	}
 
+	/**
+	 * Plugin Hooks.
+	 */
 	private function add_order_status_hooks() {
 
-		foreach( array( 'pending', 'failed', 'on-hold', 'processing', 'completed', 'refunded', 'cancelled' ) as $status ) {
+		foreach ( array( 'pending', 'failed', 'on-hold', 'processing', 'completed', 'refunded', 'cancelled' ) as $status ) {
 
 			add_action( 'woocommerce_order_status_' . $status, array( $this, 'send_customer_notification' ) );
 		}
 
-		foreach( array( 'pending_to_on-hold', 'pending_to_processing', 'pending_to_completed', 'failed_to_on-hold', 'failed_to_processing', 'failed_to_completed' ) as $status ) {
+		foreach ( array( 'pending_to_on-hold', 'pending_to_processing', 'pending_to_completed', 'failed_to_on-hold', 'failed_to_processing', 'failed_to_completed' ) as $status ) {
 
 			add_action( 'woocommerce_order_status_' . $status, array( $this, 'send_admin_new_order_notification' ) );
 		}
 	}
 
+	/**
+	 * Send customer order notifications.
+	 *
+	 * @param int $order_id WC_Order ID.
+	 */
 	public function send_customer_notification( $order_id ) {
-
 		$this->send_automated_customer_notification( $order_id );
 	}
 
+	/**
+	 * Send admin new order notifications.
+	 *
+	 * @param int $order_id WC_Order ID.
+	 */
 	public function send_admin_new_order_notification( $order_id ) {
-
 		$this->send_admin_notification( $order_id );
 	}
 
+	/**
+	 * Send admin order notification using Jusibe.
+	 *
+	 * @param int $order_id WC_Order ID.
+	 */
 	public function send_admin_notification( $order_id ) {
 
-		if ( 'yes' == get_option( 'wc_jusibe_enable_admin_sms' ) ) {
+		if ( 'yes' === get_option( 'wc_jusibe_enable_admin_sms' ) ) {
 
 			$message = get_option( 'wc_jusibe_admin_sms', '' );
 
@@ -53,17 +80,21 @@ class Jusibe_WC_SMS{
 
 				}
 			}
-
 		}
 	}
 
+	/**
+	 * Send customer order notification using Jusibe.
+	 *
+	 * @param int $order_id WC_Order ID.
+	 */
 	public function send_automated_customer_notification( $order_id ) {
 
 		$order = wc_get_order( $order_id );
 
 		$order_status = $order->get_status();
 
-		if ( 'yes' == get_option( 'wc_jusibe_order_' . $order_status ) ) {
+		if ( 'yes' === get_option( 'wc_jusibe_order_' . $order_status ) ) {
 
 			$message = get_option( 'wc_jusibe_' . $order_status . '_sms', '' );
 
@@ -72,47 +103,56 @@ class Jusibe_WC_SMS{
 			}
 
 			$message = $this->replace_message_variables( $message, $order_id );
-
-			$phone = method_exists( $order, 'get_billing_phone' ) ? $order->get_billing_phone() : $order->billing_phone;
+			$phone   = method_exists( $order, 'get_billing_phone' ) ? $order->get_billing_phone() : $order->billing_phone;
 
 			$this->send_sms( $phone, $message, true, $order_id );
 		}
 	}
 
-	public function send_sms( $to, $message, $customer_notification = false, $order_id = '' ){
+	/**
+	 * Send message using Jusibe API.
+	 *
+	 * @param int    $to                    Phone number.
+	 * @param string $message               Message.
+	 * @param bool   $customer_notification Is this a customer notification.
+	 * @param string $order_id              WooCommerce Order ID.
+	 *
+	 * @return array|mixed|object|void
+	 */
+	public function send_sms( $to, $message, $customer_notification = false, $order_id = '' ) {
 
-		$api_key 	= get_option( 'wc_jusibe_api_key', true );
-		$api_token 	= get_option( 'wc_jusibe_api_token', true );
+		$api_key   = get_option( 'wc_jusibe_api_key', true );
+		$api_token = get_option( 'wc_jusibe_api_token', true );
 
-		if( empty ( $api_key ) || empty( $api_token ) ){
+		if ( empty( $api_key ) || empty( $api_token ) ) {
 			return;
 		}
 
-		$sender_id 	= get_option( 'wc_jusibe_sender_id', true );
+		$sender_id = get_option( 'wc_jusibe_sender_id', true );
 
-		$status  	= 'Sent';
+		$status = 'Sent';
 
-		$message    = sanitize_textarea_field( $message );
+		$message = sanitize_textarea_field( $message );
 
 		$body = array(
-			'to'		=> $to,
-			'from'		=> $sender_id,
-			'message'	=> $message
+			'to'      => $to,
+			'from'    => $sender_id,
+			'message' => $message,
 		);
 
 		$headers = array(
-			'Authorization' => 'Basic ' . base64_encode( $api_key . ':' . $api_token )
+			'Authorization' => 'Basic ' . base64_encode( $api_key . ':' . $api_token ),
 		);
 
 		$args = array(
-			'body' 		=> $body,
-			'headers'	=> $headers,
-			'timeout'	=> 60
+			'body'    => $body,
+			'headers' => $headers,
+			'timeout' => 60,
 		);
 
 		$response = wp_remote_post( $this->api_url, $args );
 
-		if( ! is_wp_error( $response ) && 200 == wp_remote_retrieve_response_code( $response ) ) {
+		if ( ! is_wp_error( $response ) && 200 === (int) wp_remote_retrieve_response_code( $response ) ) {
 			$error = false;
 
 			$sent_timestamp = time();
@@ -121,8 +161,7 @@ class Jusibe_WC_SMS{
 				$order = wc_get_order( $order_id );
 				$order->add_order_note( $this->format_order_note( $to, $sent_timestamp, $message, $status, $error ) );
 			}
-		}
-		else{
+		} else {
 			$error = true;
 		}
 
@@ -130,28 +169,50 @@ class Jusibe_WC_SMS{
 
 	}
 
+	/**
+	 *  Replace message variables
+	 *
+	 * @param string $message  Message.
+	 * @param int    $order_id WooCommerce Order ID.
+	 *
+	 * @return mixed
+	 */
 	public function replace_message_variables( $message, $order_id ) {
 
 		$order = wc_get_order( $order_id );
 
-		$first_name  	= method_exists( $order, 'get_billing_first_name' ) ? $order->get_billing_first_name() : $order->billing_first_name;
-		$last_name  	= method_exists( $order, 'get_billing_last_name' ) ? $order->get_billing_last_name() : $order->billing_last_name;
+		$first_name   = method_exists( $order, 'get_billing_first_name' ) ? $order->get_billing_first_name() : $order->billing_first_name;
+		$last_name    = method_exists( $order, 'get_billing_last_name' ) ? $order->get_billing_last_name() : $order->billing_last_name;
+		$phone_number = method_exists( $order, 'get_billing_phone' ) ? $order->get_billing_phone() : $order->billing_phone;
 
 		$order_currency = method_exists( $order, 'get_currency' ) ? $order->get_currency() : $order->get_order_currency();
 
 		$replacements = array(
-			'%first_name%'      => $first_name,
-			'%last_name%'       => $last_name,
-			'%shop_name%'       => get_bloginfo( 'name' ),
-			'%order_id%'        => $order->get_order_number(),
-			'%order_amount%'    => number_format( $order->get_total() ),
-			'%order_status%'    => ucfirst( $order->get_status() ),
-			'%store_currency%'  => $order_currency,
+			'%first_name%'     => $first_name,
+			'%last_name%'      => $last_name,
+			'%phone_number%'   => $phone_number,
+			'%shop_url%'       => get_home_url(),
+			'%shop_name%'      => get_bloginfo( 'name' ),
+			'%order_id%'       => $order->get_order_number(),
+			'%order_amount%'   => number_format( $order->get_total() ),
+			'%order_status%'   => ucfirst( $order->get_status() ),
+			'%store_currency%' => $order_currency,
 		);
 
 		return str_replace( array_keys( $replacements ), $replacements, $message );
 	}
 
+	/**
+	 * Format order note
+	 *
+	 * @param string  $to             Phone number.
+	 * @param string  $sent_timestamp Sent timestamp.
+	 * @param string  $message        Message.
+	 * @param string  $status         Delivery status.
+	 * @param boolean $error          Is error.
+	 *
+	 * @return false|string
+	 */
 	private function format_order_note( $to, $sent_timestamp, $message, $status, $error ) {
 
 		try {
@@ -179,4 +240,4 @@ class Jusibe_WC_SMS{
 		return ob_get_clean();
 	}
 }
-new Jusibe_WC_SMS;
+new Jusibe_WC_SMS();
