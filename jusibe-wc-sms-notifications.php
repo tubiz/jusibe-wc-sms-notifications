@@ -5,7 +5,7 @@
 	Description:			Send SMS order notifications to admins and customers from your WooCommerce store. Powered by Jusibe.com
 	Author: 				Tunbosun Ayinla
 	Author URI: 			https://bosun.me
-	Version:                1.3.0
+	Version:                1.3.1
 	WC requires at least:   3.0.0
 	WC tested up to:        3.8
 */
