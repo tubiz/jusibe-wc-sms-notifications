@@ -134,12 +134,16 @@ This allow you to send a Test SMS.
 
 1.	You need to have Woocommerce plugin installed and activated on your WordPress site
 2.	You need to open an account on [Jusibe](https://jusibe.com)
-3.	You need to have SMS credits in your [Jusibe](https://jusibe.com) account
+3.	You need to have SMS credits on your [Jusibe](https://jusibe.com) account
 
 
 
 
 ## Changelog ##
+
+### 1.3.0 - November 19, 2019
+*	New: Add new replace variables: products, products with quantity and payment method
+*   Update: WC 3.8 compatibility.
 
 ### 1.2.0 - September 6, 2019
 *	New: Add new replace variable phone number and shop url
@@ -157,8 +161,8 @@ This allow you to send a Test SMS.
 
 ## Upgrade Notice ##
 
-### 1.2.0 =
-*	New: Add new replace variable phone number and shop url
+### 1.3.0 =
+*	New: Add new replace variables: products, products with quantity and payment method
 
 
 ## Screenshots ##

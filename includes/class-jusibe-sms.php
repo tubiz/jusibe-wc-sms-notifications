@@ -179,24 +179,37 @@ class Jusibe_WC_SMS {
 	 */
 	public function replace_message_variables( $message, $order_id ) {
 
-		$order = wc_get_order( $order_id );
+		$products               = array();
+		$products_with_quantity = array();
 
-		$first_name   = method_exists( $order, 'get_billing_first_name' ) ? $order->get_billing_first_name() : $order->billing_first_name;
-		$last_name    = method_exists( $order, 'get_billing_last_name' ) ? $order->get_billing_last_name() : $order->billing_last_name;
-		$phone_number = method_exists( $order, 'get_billing_phone' ) ? $order->get_billing_phone() : $order->billing_phone;
-
+		$order          = wc_get_order( $order_id );
+		$first_name     = method_exists( $order, 'get_billing_first_name' ) ? $order->get_billing_first_name() : $order->billing_first_name;
+		$last_name      = method_exists( $order, 'get_billing_last_name' ) ? $order->get_billing_last_name() : $order->billing_last_name;
+		$phone_number   = method_exists( $order, 'get_billing_phone' ) ? $order->get_billing_phone() : $order->billing_phone;
 		$order_currency = method_exists( $order, 'get_currency' ) ? $order->get_currency() : $order->get_order_currency();
+		$order_items    = $order->get_items();
+
+		foreach ( $order_items as $order_item ) {
+			$products[]               = $order_item->get_name();
+			$products_with_quantity[] = $order_item->get_name() . ' (Qty: ' . $order_item->get_quantity() . ')';
+		}
+
+		$products_text               = implode( "\n", $products );
+		$products_with_quantity_text = implode( "\n", $products_with_quantity );
 
 		$replacements = array(
-			'%first_name%'     => $first_name,
-			'%last_name%'      => $last_name,
-			'%phone_number%'   => $phone_number,
-			'%shop_url%'       => get_home_url(),
-			'%shop_name%'      => get_bloginfo( 'name' ),
-			'%order_id%'       => $order->get_order_number(),
-			'%order_amount%'   => number_format( $order->get_total() ),
-			'%order_status%'   => ucfirst( $order->get_status() ),
-			'%store_currency%' => $order_currency,
+			'%first_name%'             => $first_name,
+			'%last_name%'              => $last_name,
+			'%phone_number%'           => $phone_number,
+			'%shop_url%'               => get_home_url(),
+			'%shop_name%'              => get_bloginfo( 'name' ),
+			'%order_id%'               => $order->get_order_number(),
+			'%order_amount%'           => number_format( $order->get_total() ),
+			'%products%'               => $products_text,
+			'%products_with_quantity%' => $products_with_quantity_text,
+			'%payment_method%'         => $order->get_payment_method_title(),
+			'%order_status%'           => ucfirst( $order->get_status() ),
+			'%store_currency%'         => $order_currency,
 		);
 
 		return str_replace( array_keys( $replacements ), $replacements, $message );
