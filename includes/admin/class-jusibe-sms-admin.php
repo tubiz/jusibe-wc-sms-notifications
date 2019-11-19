@@ -280,6 +280,9 @@ class Jusibe_WC_SMS_Admin {
 	            	<code>%shop_url%</code>: Shop URL (' . get_home_url() . ')
 	            	<code>%order_id%</code>: The Order Number
 	            	<code>%order_amount%</code>: The Order Amount
+	            	<code>%products%</code>: Products in the order. (Shoe)
+	            	<code>%products_with_quantity%</code>: Products in the order with the quantity ordered. (Shoe (Qty: 10))
+	            	<code>%payment_method%</code>: Payment method used to pay for the order
 	            	<code>%store_currency%</code>: The default currency of the store
 	            	<code>%order_status%</code>: The Order Status',
 			),
@@ -386,6 +389,9 @@ class Jusibe_WC_SMS_Admin {
 	            	<code>%shop_url%</code>: Shop URL (' . get_home_url() . ')
 	            	<code>%order_id%</code>: The Order Number
 	            	<code>%order_amount%</code>: The Order Amount
+	            	<code>%products%</code>: Products in the order. (Shoe)
+	            	<code>%products_with_quantity%</code>: Products in the order with the quantity ordered. (Shoe (Qty: 10))
+	            	<code>%payment_method%</code>: Payment method used to pay for the order
 	            	<code>%store_currency%</code>: The default currency of the store
 	            	<code>%order_status%</code>: The Order Status',
 			),
