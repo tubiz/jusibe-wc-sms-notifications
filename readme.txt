@@ -3,8 +3,8 @@ Contributors: tubiz
 Donate link: https://bosun.me/donate
 Tags: woocommerce, jusibe, sms, sms notifications, tubiz plugins, tubiz, nigeria, order notifications
 Requires at least: 4.7
-Tested up to: 5.2
-Stable tag: 1.2.0
+Tested up to: 5.3
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -133,6 +133,10 @@ This allow you to send a Test SMS.
 
 == Changelog ==
 
+= 1.3.0 - November 19, 2019 =
+*   New: Add new replace variables: products, products with quantity and payment method
+*   Update: WC 3.8 compatibility.
+
 = 1.2.0 - September 6, 2019 =
 *	New: Add new replace variable phone number and shop url
 *   Update: WC 3.7 compatibility.
@@ -150,8 +154,8 @@ This allow you to send a Test SMS.
 
 == Upgrade Notice ==
 
-= 1.2.0 =
-*	New: Add new replace variable phone number and shop url
+= 1.3.0 =
+*	New: Add new replace variables: products, products with quantity and payment method
 
 
 == Screenshots ==
