@@ -205,6 +205,7 @@ class Jusibe_WC_SMS {
 			'%shop_name%'              => get_bloginfo( 'name' ),
 			'%order_id%'               => $order->get_order_number(),
 			'%order_amount%'           => number_format( $order->get_total() ),
+			'%order_notes%'            => $order->get_customer_note(),
 			'%products%'               => $products_text,
 			'%products_with_quantity%' => $products_with_quantity_text,
 			'%payment_method%'         => $order->get_payment_method_title(),
